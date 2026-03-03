@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "labyrinth-memory"
+version = "0.2.0"
+description = "Breaking the Quadratic Barrier via Recursive Semantic Anchoring"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [{name = "Jitendra Rawat"}]
+requires-python = ">=3.10"
+keywords = ["llm", "memory", "context", "compression", "ai", "transformer", "rag", "cache"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+]
+dependencies = [
+    "sentence-transformers>=2.7.0",
+    "tiktoken>=0.7.0",
+    "numpy>=1.26.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0.0", "pytest-cov>=5.0.0"]
+openai = ["openai>=1.30.0"]
+# chromadb is optional: works on Python <= 3.12 only
+# On Python >= 3.13, the built-in NumpyL3Backend is used automatically
+chroma = ["chromadb>=0.5.0"]
+
+[project.scripts]
+labyrinth = "labyrinth.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/JIRA4887/project-labyrinth"
+Documentation = "https://github.com/JIRA4887/project-labyrinth#readme"
+Repository = "https://github.com/JIRA4887/project-labyrinth"
+Issues = "https://github.com/JIRA4887/project-labyrinth/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["labyrinth*"]

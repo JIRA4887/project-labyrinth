@@ -1,0 +1,69 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+parts/
+var/
+sdist/
+develop-eggs/
+lib/
+lib64/
+.installed.cfg
+MANIFEST
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+*.cover
+
+# IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+
+# ChromaDB local store
+chroma_db/
+*.sqlite3
+*.chroma
+
+# Sentence-transformers model cache (large, re-downloadable)
+# models/        # Uncomment if you want to exclude downloaded models
+
+# Environment variables (never commit secrets)
+.env
+.env.*
+!.env.example
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
+
+# Generated paper (kept in docs/ instead)
+generate_paper.py
+*.docx
+
+# Benchmark results (regenerate locally)
+benchmark_results*.json
+benchmark_results*.txt

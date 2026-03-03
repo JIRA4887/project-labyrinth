@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Project Labyrinth — Token Observatory</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;800&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070b12;
+      --panel: #0d1420;
+      --border: #1a2540;
+      --accent: #00e5ff;
+      --accent2: #ff4d6d;
+      --accent3: #a8ff78;
+      --text: #c8d8f0;
+      --muted: #4a6080;
+      --glow: rgba(0, 229, 255, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      min-height: 100vh;
+      overflow-x: hidden
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(0, 80, 120, 0.18), transparent);
+      pointer-events: none
+    }
+
+    /* Header */
+    header {
+      padding: 2.5rem 3rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative
+    }
+
+    header::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 220px;
+      height: 1px;
+      background: linear-gradient(90deg, var(--accent), transparent)
+    }
+
+    .logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.4rem;
+      letter-spacing: -0.02em
+    }
+
+    .logo span {
+      color: var(--accent)
+    }
+
+    .badge {
+      font-size: 0.65rem;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 3px 8px;
+      border-radius: 2px;
+      letter-spacing: 0.1em;
+      opacity: 0.8
+    }
+
+    /* Layout */
+    main {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto auto auto;
+      gap: 1.5px;
+      background: var(--border);
+      padding: 1.5px
+    }
+
+    .panel {
+      background: var(--panel);
+      padding: 1.8rem
+    }
+
+    .panel.full {
+      grid-column: 1/-1
+    }
+
+    .panel-title {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem
+    }
+
+    .panel-title::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--accent)
+    }
+
+    /* Stat cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5px;
+      background: var(--border)
+    }
+
+    .stat {
+      background: var(--panel);
+      padding: 1.4rem 1.8rem
+    }
+
+    .stat-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      text-transform: uppercase;
+      margin-bottom: 0.5rem
+    }
+
+    .stat-value {
+      font-family: 'Syne', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      line-height: 1
+    }
+
+    .stat-sub {
+      font-size: 0.65rem;
+      color: var(--muted);
+      margin-top: 0.3rem
+    }
+
+    .green {
+      color: var(--accent3)
+    }
+
+    .red {
+      color: var(--accent2)
+    }
+
+    .cyan {
+      color: var(--accent)
+    }
+
+    .white {
+      color: #fff
+    }
+
+    /* Chart */
+    canvas {
+      display: block;
+      width: 100%;
+      height: 220px
+    }
+
+    .chart-wrap {
+      position: relative
+    }
+
+    .chart-legend {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.65rem
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%
+    }
+
+    /* Conversation sim */
+    .msg-area {
+      height: 280px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      padding-right: 0.4rem;
+      margin-bottom: 1rem
+    }
+
+    .msg {
+      padding: 0.9rem 1.1rem;
+      border-radius: 2px;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      position: relative;
+      animation: fadeIn 0.3s ease
+    }
+
+    .msg.user {
+      background: rgba(0, 229, 255, 0.06);
+      border-left: 2px solid var(--accent)
+    }
+
+    .msg.assistant {
+      background: rgba(168, 255, 120, 0.05);
+      border-left: 2px solid var(--accent3)
+    }
+
+    .msg-role {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+      text-transform: uppercase
+    }
+
+    .msg-tokens {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.8rem;
+      font-size: 0.6rem;
+      color: var(--muted)
+    }
+
+    .msg-tokens .labyrinth-t {
+      color: var(--accent3)
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(6px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    /* Input */
+    .input-row {
+      display: flex;
+      gap: 0.8rem
+    }
+
+    .msg-input {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.8rem 1rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      outline: none;
+      transition: border-color 0.2s
+    }
+
+    .msg-input:focus {
+      border-color: var(--accent)
+    }
+
+    .btn {
+      background: transparent;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 0.8rem 1.4rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.2s
+    }
+
+    .btn:hover {
+      background: var(--accent);
+      color: var(--bg)
+    }
+
+    .btn-red {
+      border-color: var(--accent2);
+      color: var(--accent2)
+    }
+
+    .btn-red:hover {
+      background: var(--accent2);
+      color: #fff
+    }
+
+    /* Token bar */
+    .token-bar-wrap {
+      margin-top: 1rem
+    }
+
+    .bar-label {
+      font-size: 0.62rem;
+      color: var(--muted);
+      margin-bottom: 0.3rem;
+      display: flex;
+      justify-content: space-between
+    }
+
+    .bar-track {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1px;
+      overflow: hidden;
+      margin-bottom: 0.8rem
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 1px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1)
+    }
+
+    .bar-raw {
+      background: linear-gradient(90deg, var(--accent2), #ff8c42)
+    }
+
+    .bar-lab {
+      background: linear-gradient(90deg, var(--accent), var(--accent3))
+    }
+
+    /* Cost table */
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.75rem;
+      margin-top: 0.5rem
+    }
+
+    .cost-table th {
+      font-size: 0.6rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      text-align: left;
+      padding: 0.5rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+      text-transform: uppercase
+    }
+
+    .cost-table td {
+      padding: 0.65rem 0.8rem;
+      border-bottom: 1px solid rgba(26, 37, 64, 0.5)
+    }
+
+    .cost-table tr:hover td {
+      background: rgba(255, 255, 255, 0.02)
+    }
+
+    .saving-badge {
+      background: rgba(168, 255, 120, 0.1);
+      color: var(--accent3);
+      padding: 1px 6px;
+      border-radius: 1px;
+      font-size: 0.62rem
+    }
+
+    /* Cache panel */
+    .cache-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      margin-top: 0.5rem
+    }
+
+    .cache-stat {
+      text-align: center;
+      padding: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 1px
+    }
+
+    .cache-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800
+    }
+
+    .cache-lbl {
+      font-size: 0.6rem;
+      color: var(--muted);
+      margin-top: 0.2rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em
+    }
+
+    /* Settings */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem
+    }
+
+    .form-group label {
+      font-size: 0.62rem;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: block;
+      margin-bottom: 0.4rem
+    }
+
+    .form-group select,
+    .form-group input[type=range] {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem
+    }
+
+    .range-val {
+      color: var(--accent);
+      font-size: 0.7rem;
+      float: right
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 4px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border)
+    }
+
+    /* Footer */
+    footer {
+      padding: 1.2rem 3rem;
+      border-top: 1px solid var(--border);
+      font-size: 0.62rem;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <div class="logo">PROJECT <span>LABYRINTH</span></div>
+      <div style="font-size:0.62rem;color:var(--muted);margin-top:0.25rem">Token Observatory · v0.2.0 · <span
+          id="active-backend" style="color:var(--accent)">Numpy L3 Active</span></div>
+    </div>
+    <div style="display:flex;gap:1rem;align-items:center">
+      <div class="badge">LIVE SIM</div>
+      <div id="live-clock" style="font-size:0.65rem;color:var(--muted)"></div>
+    </div>
+  </header>
+
+  <!-- Stat Row -->
+  <div class="stats-row" style="margin-bottom:1.5px">
+    <div class="stat">
+      <div class="stat-label">Total Tokens Seen (L0)</div>
+      <div class="stat-value cyan" id="s-total">0</div>
+      <div class="stat-sub">uncompressed raw stream</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Network Payload (L1+L2)</div>
+      <div class="stat-value green" id="s-lab">0</div>
+      <div class="stat-sub">actual tokens sent to LLM</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Compression Ratio</div>
+      <div class="stat-value white" id="s-pct">—</div>
+      <div class="stat-sub">vs standard O(n) context</div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">USD Saved (Total)</div>
+      <div class="stat-value green" id="s-usd">$0.00</div>
+      <div class="stat-sub" id="s-model-lbl">GPT-4o · $0.015/1K</div>
+    </div>
+  </div>
+
+  <main>
+    <!-- Chart -->
+    <div class="panel full">
+      <div class="panel-title">Token Accumulation Over Turns</div>
+      <div class="chart-legend">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent2)"></div> Standard LLM (raw concat)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent)"></div> Labyrinth (compressed)
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--accent3)"></div> Cache Hits (free)
+        </div>
+      </div>
+      <div class="chart-wrap"><canvas id="chart" height="220"></canvas></div>
+    </div>
+
+    <!-- Conversation Simulator -->
+    <div class="panel">
+      <div class="panel-title">Conversation Simulator</div>
+      <div class="msg-area" id="msg-area"></div>
+      <div class="input-row">
+        <input class="msg-input" id="user-input" placeholder="Type a message or press Add Turn..."
+          onkeydown="if(event.key==='Enter')sendMsg()">
+        <button class="btn" onclick="sendMsg()">ADD TURN</button>
+        <button class="btn btn-red" onclick="resetSim()">RESET</button>
+      </div>
+      <div class="token-bar-wrap">
+        <div class="bar-label"><span>Standard context window used</span><span id="raw-bar-pct">0%</span></div>
+        <div class="bar-track">
+          <div class="bar-fill bar-raw" id="raw-bar" style="width:0%"></div>
+        </div>
+        <div class="bar-label"><span>Labyrinth compressed context</span><span id="lab-bar-pct">0%</span></div>
+        <div class="bar-track">
+          <div class="bar-fill bar-lab" id="lab-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings + Cost -->
+    <div class="panel" style="display:flex;flex-direction:column;gap:1.8rem">
+      <div>
+        <div class="panel-title">Model & Settings</div>
+        <div class="settings-grid">
+          <div class="form-group">
+            <label>Model Pricing</label>
+            <select id="model-sel" onchange="updateModel()">
+              <option value="0.015">GPT-4o · $0.015/1K output</option>
+              <option value="0.003">GPT-4o-mini · $0.003/1K</option>
+              <option value="0.009">Claude Sonnet · $0.009/1K</option>
+              <option value="0.024">Claude Opus · $0.024/1K</option>
+              <option value="0.0007">Gemini Flash · $0.0007/1K</option>
+              <option value="0.0035">Gemini Pro · $0.0035/1K</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>L1 Window (tokens) <span class="range-val" id="l1-val">4096</span></label>
+            <input type="range" id="l1-range" min="512" max="16384" step="512" value="4096"
+              oninput="document.getElementById('l1-val').textContent=this.value;recalc()">
+          </div>
+          <div class="form-group">
+            <label>Cache Hit Threshold <span class="range-val" id="hit-val">0.95</span></label>
+            <input type="range" id="hit-range" min="0.70" max="0.99" step="0.01" value="0.95"
+              oninput="document.getElementById('hit-val').textContent=(+this.value).toFixed(2);recalc()">
+          </div>
+          <div class="form-group">
+            <label>Avg tokens/turn <span class="range-val" id="tpt-val">200</span></label>
+            <input type="range" id="tpt-range" min="50" max="1000" step="50" value="200"
+              oninput="document.getElementById('tpt-val').textContent=this.value;recalc()">
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel-title">Cost Projection (100 turns)</div>
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Standard</th>
+              <th>Labyrinth</th>
+              <th>Saving</th>
+            </tr>
+          </thead>
+          <tbody id="cost-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Cache Stats -->
+    <div class="panel full">
+      <div class="panel-title">Cache Performance</div>
+      <div class="cache-grid">
+        <div class="cache-stat">
+          <div class="cache-num cyan" id="c-total">0</div>
+          <div class="cache-lbl">Total Queries</div>
+        </div>
+        <div class="cache-stat">
+          <div class="cache-num green" id="c-t1">0</div>
+          <div class="cache-lbl">Tier-1 Hits (Free)</div>
+        </div>
+        <div class="cache-stat">
+          <div class="cache-num" style="color:#a78bfa" id="c-t2">0</div>
+          <div class="cache-lbl">Tier-2 Hits (Context Reuse)</div>
+        </div>
+        <div class="cache-stat">
+          <div class="cache-num red" id="c-miss">0</div>
+          <div class="cache-lbl">Cache Misses</div>
+        </div>
+        <div class="cache-stat">
+          <div class="cache-num white" id="c-rate">0%</div>
+          <div class="cache-lbl">Hit Rate</div>
+        </div>
+        <div class="cache-stat">
+          <div class="cache-num green" id="c-saved">$0.00</div>
+          <div class="cache-lbl">Saved by Cache</div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <span>Project Labyrinth · Token Observatory · Open Source · Apache 2.0</span>
+    <span id="footer-stats">Session started: —</span>
+  </footer>
+
+  <script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    const state = {
+      turns: [],
+      totalTokens: 0,
+      labTokens: 0,
+      cacheTotal: 0, cacheT1: 0, cacheT2: 0,
+      l1Window: 4096,
+      pricePer1k: 0.015,
+      sessionStart: new Date(),
+      chartRaw: [], chartLab: [], chartHits: []
+    };
+
+    const SAMPLE_MSGS = [
+      "What is the Delta Update Protocol in Labyrinth?",
+      "How does the Truth-Loop prevent hallucinations?",
+      "Can you explain the three-layer memory system?",
+      "What is the compression ratio Labyrinth achieves?",
+      "How does the Semantic Answer Cache work?",
+      "What are Anchor Tokens?",
+      "Explain the difference between L1 and L2 memory.",
+      "How does SHA-256 fingerprinting help with stale data?",
+      "What is the context sufficiency check?",
+      "How do I integrate Labyrinth with OpenAI?",
+      "What models does Labyrinth support?",
+      "Explain the Delta Update Protocol again.",  // repeat — should cache hit
+      "How does the Truth-Loop mechanism work?",   // repeat — cache hit
+      "What is an Anchor Token again?",            // repeat — cache hit
+    ];
+    let sampleIdx = 0;
+
+    const SAMPLE_RESPONSES = [
+      "The Delta Update Protocol transmits only the semantic delta — the change since the last exchange — rather than the entire conversation history. This reduces token cost by ~91% in long conversations.",
+      "The Truth-Loop fires when model confidence drops below threshold τ=0.82. It retrieves the raw source block from L3 (now using the v0.2.0 NumpyL3Backend) and re-elevates it temporarily.",
+      "Labyrinth uses three layers: L1 (working memory, raw recent tokens), L2 (Anchor Tokens), and L3 (Numpy-based vector archive). Data flows L1→L2→L3 automatically as context grows.",
+      "Project Labyrinth achieves approximately 92% token compression. In benchmarks, a 50-turn conversation drops from ~50,000 tokens to ~4,200 tokens of context per request.",
+      "The Semantic Answer Cache stores LLM answers against query embeddings. Tier-1 (≥95% similarity) returns the cached answer instantly. Tier-2 (≥70%) reuses context while generating a fresh answer.",
+      "Anchor Tokens are compressed representations: a dense 384-dim semantic vector, a short summary, a SHA-256 fingerprint, and a pointer to the storage block in the Numpy L3 archive.",
+      "L1 holds the last N tokens verbatim — full fidelity. When L1 overflows, the oldest 512-token block is compressed into an L2 Anchor Token (~60 tokens each).",
+      "SHA-256 fingerprinting stores a hash of each source block. Before the Truth-Loop returns L2 data as fact, it recomputes the hash from L3. A mismatch flags the anchor as stale.",
+      "The Context Sufficiency Check scores how well retrieved L3 blocks cover the query. If coverage (cosine sim) is below 0.40, a fallback fetches more blocks to ensure accuracy.",
+      "Integration requires 3 steps: install labyrinth-memory, create a LabyrinthProxy, and wrap your API calls. The proxy handles context management and caching transparently.",
+      "Labyrinth v0.2.0 is model-agnostic and Python 3.14 ready. It uses a pure-Numpy vector engine for maximum compatibility across all environments.",
+    ];
+
+    // ── Clock ──────────────────────────────────────────────────────────────────
+    function updateClock() {
+      document.getElementById('live-clock').textContent = new Date().toLocaleTimeString();
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    // ── Model ──────────────────────────────────────────────────────────────────
+    function updateModel() {
+      state.pricePer1k = parseFloat(document.getElementById('model-sel').value);
+      const label = document.getElementById('model-sel').selectedOptions[0].text;
+      document.getElementById('s-model-lbl').textContent = label;
+      recalc();
+    }
+
+    // ── Cost Table ─────────────────────────────────────────────────────────────
+    function buildCostTable() {
+      const models = [
+        ['GPT-4o', 0.015], ['GPT-4o-mini', 0.003],
+        ['Claude Sonnet', 0.009], ['Claude Opus', 0.024],
+        ['Gemini Flash', 0.0007], ['Gemini Pro', 0.0035],
+      ];
+      const tpt = parseInt(document.getElementById('tpt-range').value);
+      const turns = 100;
+      const l1 = parseInt(document.getElementById('l1-range').value);
+      const tbody = document.getElementById('cost-tbody');
+      tbody.innerHTML = '';
+      models.forEach(([name, price]) => {
+        // Standard: sum of 1..turns * tpt (growing window)
+        let rawTokens = 0;
+        for (let i = 1; i <= turns; i++) rawTokens += Math.min(i * tpt, 128000);
+        // Labyrinth: L1 + anchors (50 tokens each for compressed blocks beyond L1)
+        let labT = 0;
+        for (let i = 1; i <= turns; i++) {
+          const rawCtx = i * tpt;
+          if (rawCtx <= l1) labT += rawCtx;
+          else {
+            const anchors = Math.floor((rawCtx - l1) / 500);
+            labT += l1 + anchors * 50;
+          }
+        }
+        const rawCost = (rawTokens / 1000) * price;
+        const labCost = (labT / 1000) * price;
+        const pct = Math.round((1 - labCost / rawCost) * 100);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${name}</td><td class="red">$${rawCost.toFixed(2)}</td><td class="green">$${labCost.toFixed(2)}</td><td><span class="saving-badge">-${pct}%</span></td>`;
+        tbody.appendChild(tr);
+      });
+    }
+    buildCostTable();
+
+    // ── Simulation ─────────────────────────────────────────────────────────────
+    function sendMsg() {
+      const inp = document.getElementById('user-input');
+      let userText = inp.value.trim();
+      if (!userText) {
+        userText = SAMPLE_MSGS[sampleIdx % SAMPLE_MSGS.length];
+        sampleIdx++;
+      }
+      inp.value = '';
+
+      const userTokens = Math.ceil(userText.split(/\s+/).length * 1.3) + 4;
+      const responseText = SAMPLE_RESPONSES[sampleIdx % SAMPLE_RESPONSES.length];
+      const respTokens = Math.ceil(responseText.split(/\s+/).length * 1.3) + 4;
+      const turnTokens = userTokens + respTokens;
+
+      state.totalTokens += turnTokens;
+      state.turns.push({ userText, responseText, userTokens, respTokens, turnTokens });
+
+      // Determine if cache hit (simplified: ~30% hit rate after turn 3)
+      const turn = state.turns.length;
+      let cacheHit = false, tier = 0;
+      state.cacheTotal++;
+      const isRepeat = SAMPLE_MSGS.slice(11).some(m => userText.includes(m.substring(0, 20)));
+
+      if (turn > 3 && (isRepeat || Math.random() < 0.28)) {
+        if (Math.random() < 0.6) { state.cacheT1++; tier = 1; cacheHit = true; }
+        else { state.cacheT2++; tier = 2; }
+      }
+
+      // Compute Labyrinth token cost for this turn
+      const l1 = parseInt(document.getElementById('l1-range').value);
+      const rawCtxNow = state.totalTokens;
+      let labCtx;
+      if (rawCtxNow <= l1) labCtx = rawCtxNow;
+      else {
+        const overflow = rawCtxNow - l1;
+        const anchors = Math.ceil(overflow / 500);
+        labCtx = l1 + anchors * 50;
+      }
+
+      // Tier-1 cache hit = 0 tokens sent
+      const tokensThisTurn = cacheHit && tier === 1 ? 0 : labCtx - state.labTokens;
+      state.labTokens = cacheHit && tier === 1 ? state.labTokens : labCtx;
+
+      // Chart data
+      const rawCtxStd = state.turns.reduce((s, t, i) => s + (i + 1) * t.turnTokens, 0) / state.turns.length;
+      state.chartRaw.push(rawCtxNow);
+      state.chartLab.push(cacheHit && tier === 1 ? (state.chartLab[state.chartLab.length - 1] || 0) : state.labTokens);
+      state.chartHits.push(tier === 1 ? 1 : 0);
+
+      // Render message
+      const area = document.getElementById('msg-area');
+      const rawLabel = tier === 1 ? `<span class="labyrinth-t">CACHE HIT · 0 tokens</span>` :
+        tier === 2 ? `<span class="labyrinth-t">CTX REUSE · ${Math.round(tokensThisTurn * 0.4)} saved</span>` :
+          `<span class="labyrinth-t">${tokensThisTurn} tokens</span>`;
+
+      area.innerHTML += `
+    <div class="msg user">
+      <div class="msg-role">USER</div>
+      <div class="msg-tokens">RAW ${userTokens}t</div>
+      ${escHtml(userText)}
+    </div>
+    <div class="msg assistant">
+      <div class="msg-role">ASSISTANT ${tier === 1 ? '· <span style="color:var(--accent3)">⚡ TIER-1 CACHE HIT</span>' : tier === 2 ? '· <span style="color:#a78bfa">◈ TIER-2 CONTEXT HIT</span>' : ''}</div>
+      <div class="msg-tokens">${rawLabel}</div>
+      ${escHtml(responseText.substring(0, 180))}${responseText.length > 180 ? '…' : ''}
+    </div>`;
+      area.scrollTop = area.scrollHeight;
+
+      recalc();
+      drawChart();
+    }
+
+    function escHtml(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+    function recalc() {
+      const raw = state.totalTokens;
+      const lab = state.labTokens || 0;
+      const pct = raw > 0 ? Math.round((1 - lab / raw) * 100) : 0;
+      const usdSaved = ((raw - lab) / 1000) * state.pricePer1k;
+      const cacheSaved = (state.cacheT1 * 300 / 1000) * state.pricePer1k; // ~300 avg tokens saved per hit
+
+      document.getElementById('s-total').textContent = raw.toLocaleString();
+      document.getElementById('s-lab').textContent = lab.toLocaleString();
+      document.getElementById('s-pct').textContent = pct > 0 ? `-${pct}%` : '—';
+      document.getElementById('s-usd').textContent = `$${usdSaved.toFixed(4)}`;
+
+      const l1 = parseInt(document.getElementById('l1-range').value);
+      const maxCtx = 128000;
+      document.getElementById('raw-bar').style.width = Math.min(raw / maxCtx * 100, 100) + '%';
+      document.getElementById('lab-bar').style.width = Math.min(lab / maxCtx * 100, 100) + '%';
+      document.getElementById('raw-bar-pct').textContent = Math.min(Math.round(raw / maxCtx * 100), 100) + '%';
+      document.getElementById('lab-bar-pct').textContent = Math.min(Math.round(lab / maxCtx * 100), 100) + '%';
+
+      // Cache stats
+      const hits = state.cacheT1 + state.cacheT2;
+      document.getElementById('c-total').textContent = state.cacheTotal;
+      document.getElementById('c-t1').textContent = state.cacheT1;
+      document.getElementById('c-t2').textContent = state.cacheT2;
+      document.getElementById('c-miss').textContent = state.cacheTotal - hits;
+      document.getElementById('c-rate').textContent = state.cacheTotal > 0 ? Math.round(hits / state.cacheTotal * 100) + '%' : '0%';
+      document.getElementById('c-saved').textContent = `$${cacheSaved.toFixed(4)}`;
+
+      buildCostTable();
+      document.getElementById('footer-stats').textContent = `Session: ${state.turns.length} turns · ${((Date.now() - state.sessionStart) / 60000).toFixed(1)} min`;
+    }
+
+    function resetSim() {
+      Object.assign(state, { turns: [], totalTokens: 0, labTokens: 0, cacheTotal: 0, cacheT1: 0, cacheT2: 0, chartRaw: [], chartLab: [], chartHits: [] });
+      sampleIdx = 0;
+      document.getElementById('msg-area').innerHTML = '';
+      recalc(); drawChart();
+    }
+
+    // ── Canvas Chart ────────────────────────────────────────────────────────────
+    function drawChart() {
+      const canvas = document.getElementById('chart');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.parentElement.offsetWidth;
+      canvas.height = 220;
+      const W = canvas.width, H = canvas.height;
+      const PAD = { t: 20, r: 20, b: 35, l: 60 };
+
+      ctx.clearRect(0, 0, W, H);
+
+      const rawData = state.chartRaw;
+      const labData = state.chartLab;
+      if (rawData.length < 2) {
+        ctx.fillStyle = 'rgba(74,96,128,0.3)';
+        ctx.font = '13px Space Mono, monospace';
+        ctx.textAlign = 'center';
+        ctx.fillText('Add conversation turns to see the chart', W / 2, H / 2);
+        return;
+      }
+
+      const maxVal = Math.max(...rawData, 1000);
+      const n = rawData.length;
+      const chartW = W - PAD.l - PAD.r;
+      const chartH = H - PAD.t - PAD.b;
+
+      function xPos(i) { return PAD.l + (i / (n - 1)) * chartW; }
+      function yPos(v) { return PAD.t + chartH - (v / maxVal) * chartH; }
+
+      // Grid lines
+      ctx.strokeStyle = 'rgba(26,37,64,0.8)';
+      ctx.lineWidth = 1;
+      for (let g = 0; g <= 4; g++) {
+        const y = PAD.t + (g / 4) * chartH;
+        ctx.beginPath(); ctx.moveTo(PAD.l, y); ctx.lineTo(W - PAD.r, y); ctx.stroke();
+        ctx.fillStyle = 'rgba(74,96,128,0.7)';
+        ctx.font = '10px Space Mono';
+        ctx.textAlign = 'right';
+        ctx.fillText(Math.round(maxVal * (1 - g / 4)).toLocaleString(), PAD.l - 8, y + 4);
+      }
+
+      // Fill under raw
+      ctx.beginPath();
+      ctx.moveTo(xPos(0), H - PAD.b);
+      rawData.forEach((v, i) => ctx.lineTo(xPos(i), yPos(v)));
+      ctx.lineTo(xPos(n - 1), H - PAD.b);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,77,109,0.08)';
+      ctx.fill();
+
+      // Raw line
+      ctx.beginPath();
+      rawData.forEach((v, i) => i === 0 ? ctx.moveTo(xPos(i), yPos(v)) : ctx.lineTo(xPos(i), yPos(v)));
+      ctx.strokeStyle = '#ff4d6d'; ctx.lineWidth = 2; ctx.stroke();
+
+      // Fill under lab
+      ctx.beginPath();
+      ctx.moveTo(xPos(0), H - PAD.b);
+      labData.forEach((v, i) => ctx.lineTo(xPos(i), yPos(v)));
+      ctx.lineTo(xPos(n - 1), H - PAD.b);
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(0,229,255,0.08)';
+      ctx.fill();
+
+      // Lab line
+      ctx.beginPath();
+      labData.forEach((v, i) => i === 0 ? ctx.moveTo(xPos(i), yPos(v)) : ctx.lineTo(xPos(i), yPos(v)));
+      ctx.strokeStyle = '#00e5ff'; ctx.lineWidth = 2.5; ctx.stroke();
+
+      // Cache hit dots
+      state.chartHits.forEach((hit, i) => {
+        if (!hit) return;
+        ctx.beginPath();
+        ctx.arc(xPos(i), yPos(labData[i]), 5, 0, Math.PI * 2);
+        ctx.fillStyle = '#a8ff78'; ctx.fill();
+      });
+
+      // X axis labels
+      ctx.fillStyle = 'rgba(74,96,128,0.8)'; ctx.font = '10px Space Mono'; ctx.textAlign = 'center';
+      for (let i = 0; i < n; i += Math.max(1, Math.floor(n / 8))) {
+        ctx.fillText(`T${i + 1}`, xPos(i), H - PAD.b + 16);
+      }
+    }
+
+    window.addEventListener('resize', drawChart);
+    drawChart();
+
+    // Auto-demo: add a few turns on load after a delay
+    setTimeout(() => {
+      for (let i = 0; i < 3; i++) {
+        document.getElementById('user-input').value = SAMPLE_MSGS[i];
+        sendMsg();
+      }
+    }, 400);
+  </script>
+</body>
+
+</html>
