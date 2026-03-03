@@ -1,0 +1,1 @@
+Breaking the quadratic memory barrier for autonomous LLM agents. Achieves constant-time context windows using Recursive Semantic Anchoring and Delta Update Protocol, with pluggable backends, semantic answer caching, and a production-ready CLI.
