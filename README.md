@@ -30,45 +30,51 @@ labyrinth demo
 labyrinth compress my_code.py
 ```
 
-## Example Integration (OpenAI)
+## Video Demo & Tutorial
 
-Integrating Labyrinth with standard language models takes ~3 lines of new code.
+![Project Labyrinth Token Dashboard Demo](file:///C:/Users/Jitendra%20Rawat/.gemini/antigravity/brain/15daa58f-826a-4d54-b368-7b1f95e681a4/dashboard_demo_recording_1772530914227.webp)
 
+*Visualizing the Recursive Semantic Anchoring flow (L1 → L2 → L3) and real-time cost savings.*
+
+## Multi-LLM Integration
+
+Project Labyrinth is provider-agnostic. Integrating it into your existing AI stack takes only a few lines of code.
+
+### OpenAI
 ```python
-import openai
-from labyrinth import LabyrinthProxy
-
-# 1. Initialize the caching memory proxy explicitly
-proxy = LabyrinthProxy(l1_max_tokens=500, use_l3=True)
-
-queries = [
-    "What is the theory of relativity?",
-    "What is the theory of relativity?", # Tier 1 cache hit!
-]
-
-for query in queries:
-    # 2. Ask proxy to evaluate context & caching
-    result, messages = proxy.ask(query)
-    
-    if result.is_semantic_hit:
-        # 3a. Answer found in cache — zero cost
-        response = result.answer
-    else:
-        # 3b. Pay for compressed tokens from OpenAI
-        res = openai.chat.completions.create(
-            model="gpt-4o",
-            messages=messages
-        )
-        response = res.choices[0].message.content
-        
-        # 4. Push network response back to local memory & cache
-        proxy.push_assistant(response)
-        proxy.store_answer(query, response)
-
-    print(response)
+result, messages = proxy.ask(query)
+if result.is_semantic_hit:
+    response = result.answer
+else:
+    res = openai.chat.completions.create(model="gpt-4o", messages=messages)
+    response = res.choices[0].message.content
+    proxy.push_assistant(response)
+    proxy.store_answer(query, response)
 ```
 
-Check out the full [openai_integration.py](examples/openai_integration.py) to simulate API performance locally with Dry-Run mode (`python examples/openai_integration.py --dry-run`).
+### Anthropic Claude
+```python
+# Pass Labyrinth's system prompt to Claude's top-level parameter
+result, messages = proxy.ask(query)
+response = anthropic_client.messages.create(
+    model="claude-3-5-sonnet-20240620",
+    system=messages[0]["content"], # Labyrinth context
+    messages=[m for m in messages if m["role"] != "system"] + [{"role": "user", "content": query}]
+)
+```
+
+### Google Gemini
+```python
+result, messages = proxy.ask(query)
+model = genai.GenerativeModel('gemini-1.5-pro')
+# Labyrinth manages the history compression for Gemini's content parts
+response = model.generate_content(str(messages) + query)
+```
+
+See the full scripts in the [examples/](examples/) directory for production-ready implementations:
+- [openai_integration.py](examples/openai_integration.py)
+- [claude_integration.py](examples/claude_integration.py)
+- [gemini_integration.py](examples/gemini_integration.py)
 
 ## Development
 ```bash
