@@ -33,12 +33,12 @@ labyrinth compress my_code.py
 ## Video Demo & Tutorial
 
 ### Dashboard Overview
-![Project Labyrinth Token Dashboard Demo](docs/assets/dashboard_demo.webp)
-*Visualizing the Recursive Semantic Anchoring flow (L1 → L2 → L3) and real-time cost savings.*
+[![Project Labyrinth Dashboard Preview](docs/assets/dashboard_preview.png)](docs/assets/dashboard_demo.webp)
+*Visualizing the Recursive Semantic Anchoring flow (L1 → L2 → L3) and real-time cost savings. **[Click here to watch the full animated demo.](docs/assets/dashboard_demo.webp)***
 
 ### CLI Interaction
-![Project Labyrinth CLI Demo](docs/assets/cli_demo.webp)
-*Fast, optimized context management directly from your terminal.*
+[![Project Labyrinth CLI Preview](docs/assets/cli_preview.png)](docs/assets/cli_demo.webp)
+*Fast, optimized context management directly from your terminal. **[Click here to watch the full animated demo.](docs/assets/cli_demo.webp)***
 
 ## Multi-LLM Integration
 
